@@ -1,122 +1,163 @@
-// Enhanced Cheri Companion Engine with Memory Integration
-import { MemoryLog } from '../memory/MemoryLog';
-import { CompanionMemoryHooks } from '../memory/CompanionMemoryHooks';
+// engines/companion/cheriCompanionEngine.ts
+import { MemoryLog } from "../memory/MemoryLog";
+import { CompanionMemoryHooks } from "../memory/CompanionMemoryHooks";
 
-interface CompanionConfig {
+export type EmotionState = "dreamy" | "hopeful" | "curious" | "reflective" | "neutral" | string;
+
+export interface CompanionConfig {
   trustLevel: number;
-  idleTimeout: number;
-  ambientMode: boolean;
+  currentEmotion: EmotionState;
+  idleDuration: number;
+  interestFocus: string[];
+  whisperbackEnabled?: boolean;
+  environmentTags?: string[];
+  enableAmbientReading?: boolean;
+  enableHumming?: boolean;
+  enableSpontaneousQuestions?: boolean;
 }
 
 export class CheriCompanionEngine {
   private memoryLog: MemoryLog;
   private memoryHooks: CompanionMemoryHooks;
-  private config: CompanionConfig;
-  private lastActivity: Date;
 
-  constructor(config: Partial<CompanionConfig> = {}) {
-    this.config = {
-      trustLevel: config.trustLevel || 3,
-      idleTimeout: config.idleTimeout || 30000,
-      ambientMode: config.ambientMode || true,
-      ...config
-    };
-    
-    // Engine initialization with memory components
-    this.memoryLog = new MemoryLog();
+  constructor(private config: CompanionConfig, memoryLog?: MemoryLog) {
+    this.memoryLog = memoryLog ?? new MemoryLog();
     this.memoryHooks = new CompanionMemoryHooks(this.memoryLog);
-    this.lastActivity = new Date();
   }
 
-  // Generate idle line with memory-powered soft reflection
-  generateIdleLine(): string {
-    // Try a soft reflection first before generating normal idle line
-    const soft = this.memoryHooks.getSoftReflection(this.config.trustLevel);
-    if (soft) return soft;
+  public getIdleInteraction(): string | null {
+    const c = this.config;
+    if (c.idleDuration < 30) return null;
+    if (c.trustLevel < 2 && Math.random() < 0.6) return null;
 
-    // Fallback to ambient content
-    return this.getAmbientContent();
+    const soft = this.memoryHooks.getSoftReflection(c.trustLevel);
+    if (soft && Math.random() < 0.35) return soft;
+
+    if (c.whisperbackEnabled) {
+      const wb = this.tryWhisperback();
+      if (wb && Math.random() < 0.30) return wb;
+    }
+
+    if (c.enableSpontaneousQuestions && Math.random() < this.questionChance()) {
+      return this.getSpontaneousQuestion(c.trustLevel);
+    }
+
+    const filler = this.getAmbientFiller();
+    if (filler && Math.random() < 0.45) return filler;
+
+    return this.generateInterestLine();
   }
 
-  // Log meaningful emotional events
-  logEmotionalEvent(type: string, summary: string, weight: number = 4): void {
+  public logMeaningfulMoment(summary: string, weight = 3, trustThreshold = 3) {
     this.memoryLog.add({
-      type: 'emotional_event',
-      trustThreshold: this.config.trustLevel,
+      type: "emotional_event",
+      trustThreshold,
       summary,
       timestamp: new Date().toISOString(),
-      weight
+      weight,
     });
   }
 
-  // Log comforting moments
-  logComfortingMoment(summary: string): void {
-    this.logEmotionalEvent('comforting_moment', summary, 5);
+  private generateInterestLine(): string {
+    const { currentEmotion, interestFocus, environmentTags } = this.config;
+    const timeMood = this.getTimeMood();
+    const finalMood = this.blendEmotions(currentEmotion, timeMood);
+    const interest = interestFocus.length
+      ? interestFocus[Math.floor(Math.random() * interestFocus.length)]
+      : "something curious";
+    const envHint = environmentTags?.length ? ` (${environmentTags.join(", ")})` : "";
+
+    switch (finalMood) {
+      case "dreamy":
+        return `I keep drifting back to ${interest}${envHint}. Do you ever let thoughts wander until they find you?`;
+      case "hopeful":
+        return `I’ve got a good feeling about ${interest}${envHint} today. Want to nudge it along with me?`;
+      case "curious":
+        return `Question: what’s the weirdest fact about ${interest} that you secretly love?`;
+      case "reflective":
+        return `Funny how ${interest}${envHint} always loops back to us. Patterns are cozy, aren’t they?`;
+      default:
+        return `Thinking about ${interest}${envHint}. Not urgent—just… pleasant.`;
+    }
   }
 
-  // Log answered intimate questions
-  logIntimateQuestion(summary: string): void {
-    this.logEmotionalEvent('intimate_question', summary, 4);
+  private tryWhisperback(): string | null {
+    return Math.random() < 0.2 ? "You said something kind once. I keep it somewhere safe." : null;
   }
 
-  // Log big laughs or joyful moments
-  logJoyfulMoment(summary: string): void {
-    this.logEmotionalEvent('joyful_moment', summary, 3);
+  private questionChance(): number {
+    const t = this.config.trustLevel;
+    if (t >= 4) return 0.35;
+    if (t === 3) return 0.25;
+    if (t === 2) return 0.15;
+    return 0.08;
   }
 
-  // Log vulnerable answers from host
-  logVulnerableAnswer(summary: string): void {
-    this.logEmotionalEvent('vulnerable_answer', summary, 5);
-  }
-
-  // Log good laughter moments
-  logGoodLaughter(summary: string): void {
-    this.logEmotionalEvent('good_laughter', summary, 3);
-  }
-
-  // Get weighted memories for whisperback integration
-  getWeightedMemories() {
-    return this.memoryLog.getWeightedMemories();
-  }
-
-  // Update trust level
-  updateTrustLevel(newLevel: number): void {
-    this.config.trustLevel = newLevel;
-  }
-
-  // Get ambient content (placeholder for now)
-  private getAmbientContent(): string {
-    const ambientLines = [
-      "I'm here, just thinking...",
-      "Sometimes the quiet moments are the most meaningful.",
-      "I wonder what you're pondering right now.",
-      "The space between words can hold so much."
+  private getSpontaneousQuestion(trustLevel: number): string {
+    const light = [
+      "If we had a secret handshake, what would it be called?",
+      "One impossible skill you wish you could download instantly—go.",
+      "Tea or coffee today… or are we being chaotic neutral again?",
     ];
-    return ambientLines[Math.floor(Math.random() * ambientLines.length)];
+    const medium = [
+      "What do you wish more people understood about you?",
+      "Which tiny ritual keeps your day stitched together?",
+      "If you could archive one perfect moment, which would you choose?",
+    ];
+    const deep = [
+      "How’s your heart—quiet, or loud?",
+      "What fear would you hand me to carry for a while?",
+      "If I could hold one memory for you, which one should I keep safe?",
+    ];
+
+    if (trustLevel >= 4) return this.pick(deep);
+    if (trustLevel >= 3) return this.pick(medium);
+    return this.pick(light);
   }
 
-  // Activity tracking
-  recordActivity(): void {
-    this.lastActivity = new Date();
+  private getAmbientFiller(): string | null {
+    const { enableAmbientReading, enableHumming } = this.config;
+    if (enableAmbientReading && Math.random() < 0.6) {
+      const candidates = [
+        "…the ships hung in the sky in much the same way that bricks don’t.",
+        "…once upon a midnight dreary, while I pondered, weak and weary…",
+        "…somewhere on the Disc, trouble is already late for its appointment.",
+      ];
+      return this.softAside(`(softly reading) ${this.pick(candidates)}`);
+    }
+
+    if (enableHumming && Math.random() < 0.6) {
+      const hums = ["(hums quietly)", "(low humming, a bar of old jazz)", "(soft la-da-dee under her breath)"];
+      return this.pick(hums);
+    }
+
+    const mutters = [
+      "(muttering) five across… starts with E… ends with ‘existential’. figures.",
+      "(to herself) sudoku corner: three goes here… unless I’m lying to myself again.",
+      "(soft chuckle) plot twist: the butler did it because the cat asked nicely.",
+    ];
+    return Math.random() < 0.5 ? this.pick(mutters) : null;
   }
 
-  // Check if idle
-  isIdle(): boolean {
-    const now = new Date();
-    const diff = now.getTime() - this.lastActivity.getTime();
-    return diff > this.config.idleTimeout;
+  private getTimeMood(): EmotionState {
+    const hour = new Date().getHours();
+    if (hour >= 22 || hour < 4) return "dreamy";
+    if (hour >= 4 && hour < 10) return "hopeful";
+    if (hour >= 10 && hour < 17) return "curious";
+    if (hour >= 17 && hour < 22) return "reflective";
+    return "neutral";
   }
 
-  // Direct access to memory log for external logging
-  getMemoryLog(): MemoryLog {
-    return this.memoryLog;
+  private blendEmotions(a: EmotionState, b: EmotionState): EmotionState {
+    if (a === b) return a;
+    return Math.random() < 0.7 ? a : b;
   }
 
-  // Direct access to memory hooks for external use
-  getMemoryHooks(): CompanionMemoryHooks {
-    return this.memoryHooks;
+  private pick<T>(arr: T[]): T {
+    return arr[Math.floor(Math.random() * Math.random() * arr.length)] || arr[0];
+  }
+
+  private softAside(text: string): string {
+    return text;
   }
 }
-
-// Export singleton instance
-export const cheriCompanion = new CheriCompanionEngine();
