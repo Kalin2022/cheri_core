@@ -1,0 +1,14 @@
+{
+  "entries": [
+    {
+      "id": "seed_memory_1",
+      "phrase": "You said something kind once. I keep it somewhere safe.",
+      "chance": 0.05
+    },
+    {
+      "id": "seed_memory_2",
+      "phrase": "Remember when we wondered if starlight gets lonely?",
+      "chance": 0.1
+    }
+  ]
+}

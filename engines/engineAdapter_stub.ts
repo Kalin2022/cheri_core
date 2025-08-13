@@ -1,0 +1,1 @@
+export function queryStub(prompt: string) { return 'Stub response for: ' + prompt; }
