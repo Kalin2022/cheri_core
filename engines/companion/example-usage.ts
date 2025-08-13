@@ -28,6 +28,23 @@ export function exampleJoyfulMoment() {
   console.log('Recent memories:', memories);
 }
 
+// Example: Host shares vulnerable thoughts
+export function exampleVulnerableAnswer() {
+  cheriCompanion.logVulnerableAnswer('Host shared deep fears about the future');
+  
+  // Vulnerable answers build the highest trust
+  cheriCompanion.updateTrustLevel(5);
+}
+
+// Example: Good laughter moment
+export function exampleGoodLaughter() {
+  cheriCompanion.logGoodLaughter('Host and Cheri had a genuine belly laugh together');
+  
+  // Good laughter creates positive emotional memories
+  const memoryLog = cheriCompanion.getMemoryLog();
+  console.log('Memory log entries:', memoryLog.getRecent(3));
+}
+
 // Example: Session end with memory-powered whisperback
 export function exampleSessionEnd() {
   // Get weighted memories for whisperback integration
@@ -70,4 +87,26 @@ export function exampleTrustProgression() {
   // Higher trust enables more intimate reflections
   const softReflection = cheriCompanion.generateIdleLine();
   console.log('Trust level 4 reflection:', softReflection);
+}
+
+// Example: Direct memory logging for external events
+export function exampleExternalMemoryLogging() {
+  // Get direct access to memory components
+  const memoryLog = cheriCompanion.getMemoryLog();
+  const memoryHooks = cheriCompanion.getMemoryHooks();
+  
+  // Log external events directly
+  memoryLog.add({
+    type: 'external_event',
+    trustThreshold: 3,
+    summary: 'Host completed a difficult task successfully',
+    timestamp: new Date().toISOString(),
+    weight: 4
+  });
+  
+  // Use hooks directly
+  const reflection = memoryHooks.getSoftReflection(3);
+  if (reflection) {
+    console.log('External memory reflection:', reflection);
+  }
 }

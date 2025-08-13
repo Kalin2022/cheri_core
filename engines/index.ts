@@ -1,8 +1,8 @@
 // Engine exports for cleaner imports
-export { CheriCompanionEngine, cheriCompanion } from './companion/cheriCompanionEngine';
-export { MemoryLog } from './memory/MemoryLog';
-export { CompanionMemoryHooks } from './memory/CompanionMemoryHooks';
-export { generateWhisper } from './whisperbackEngine';
+export * from './companion/cheriCompanionEngine';
+export * from './memory/MemoryLog';
+export * from './memory/CompanionMemoryHooks';
+export { generateWhisper, generateMemoryWhisper } from './whisperbackEngine';
 
 // Interest tracking
 export { InterestTracker, cheriInterestTracker } from '../cheri_core/engines/interest_tracker';

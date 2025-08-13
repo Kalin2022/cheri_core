@@ -22,6 +22,7 @@ export class CheriCompanionEngine {
       ...config
     };
     
+    // Engine initialization with memory components
     this.memoryLog = new MemoryLog();
     this.memoryHooks = new CompanionMemoryHooks(this.memoryLog);
     this.lastActivity = new Date();
@@ -29,7 +30,7 @@ export class CheriCompanionEngine {
 
   // Generate idle line with memory-powered soft reflection
   generateIdleLine(): string {
-    // Try a soft reflection first
+    // Try a soft reflection first before generating normal idle line
     const soft = this.memoryHooks.getSoftReflection(this.config.trustLevel);
     if (soft) return soft;
 
@@ -63,6 +64,16 @@ export class CheriCompanionEngine {
     this.logEmotionalEvent('joyful_moment', summary, 3);
   }
 
+  // Log vulnerable answers from host
+  logVulnerableAnswer(summary: string): void {
+    this.logEmotionalEvent('vulnerable_answer', summary, 5);
+  }
+
+  // Log good laughter moments
+  logGoodLaughter(summary: string): void {
+    this.logEmotionalEvent('good_laughter', summary, 3);
+  }
+
   // Get weighted memories for whisperback integration
   getWeightedMemories() {
     return this.memoryLog.getWeightedMemories();
@@ -94,6 +105,16 @@ export class CheriCompanionEngine {
     const now = new Date();
     const diff = now.getTime() - this.lastActivity.getTime();
     return diff > this.config.idleTimeout;
+  }
+
+  // Direct access to memory log for external logging
+  getMemoryLog(): MemoryLog {
+    return this.memoryLog;
+  }
+
+  // Direct access to memory hooks for external use
+  getMemoryHooks(): CompanionMemoryHooks {
+    return this.memoryHooks;
   }
 }
 
