@@ -1,0 +1,1 @@
+<ideaReader.ts content>
