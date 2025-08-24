@@ -1,0 +1,6 @@
+{
+  "default_engine": "piper",
+  "voice_model": "en_US-amy-low",
+  "output_device": "default",
+  "volume": 1.0
+}

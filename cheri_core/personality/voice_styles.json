@@ -1,0 +1,28 @@
+{
+  "cheri-rogue-v1": {
+    "length_scale": 1.05,
+    "espeak_voice": "en-us",
+    "description": "Cheri's signature tone: smooth, sultry, and paced for noir delivery"
+  },
+  "southern_slow": {
+    "length_scale": 1.2,
+    "espeak_voice": "en-us-southern",
+    "description": "Warm, leisurely pace with subtle southern flair"
+  },
+  "ny_fast": {
+    "length_scale": 0.85,
+    "espeak_voice": "en-us-ny",
+    "description": "Quick, clipped delivery with high assertiveness"
+  },
+  "noir_whisper": {
+    "length_scale": 1.1,
+    "espeak_voice": "en-us",
+    "whisper": true,
+    "description": "Soft-spoken, low-volume noir-style whisper tone"
+  },
+  "ai_dryform": {
+    "length_scale": 1.0,
+    "espeak_voice": "en-gb",
+    "description": "Flat, technical delivery for emergency/system tone"
+  }
+}
